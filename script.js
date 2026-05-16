@@ -1,54 +1,64 @@
-const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRe476Q6ntGtSXrRN4FyWRsdtb_nlTC4zcxKER2AZqKssyiclKA4IQlKH_3GqhDFm-rpj9-zUBJm62/pub?output=csv';
+const apiURL = 'https://v1.nocodeapi.com/daissudais/google_sheets/dKlDkUlArupwLiiv?tabId=Sheet1';
+
+// If your WhatsApp number is the same for all products, change it here:
+const myWhatsAppNumber = "60123456789"; // Use format: country code + number (no + or spaces)
 
 async function loadProducts() {
-    const response = await fetch(sheetURL);
-    const data = await response.text();
-    
-    // Use PapaParse or split strings to turn CSV into an Array
-    const rows = data.split('\n').slice(1); // Skip header row
-    
-    const container = document.getElementById('catalog-container');
-    
-   // ... existing fetch code ...
+    try {
+        const response = await fetch(apiURL);
+        const jsonResponse = await response.json();
+        
+        // NoCodeAPI returns data inside the 'data' array
+        const products = jsonResponse.data; 
+        
+        const container = document.getElementById('catalog-container');
+        container.innerHTML = ''; 
 
-rows.forEach(row => {
-    // Assuming CSV columns: Name, Price, Category, Image, Description, WhatsAppLink
-    const [name, price, category, image, description, whatsapp] = row.split(',');
+        products.forEach(product => {
+            // Mapped exactly to your Google Sheet screenshot headers
+            const name = product.Name;
+            const price = product.Price;
+            const category = product.Category;
+            const image = product.ImageURL; // Matched to your header "ImageURL"
+            const description = product.Description;
 
-    if (name) {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <img src="${image}" alt="${name}">
-            <h3>${name}</h3>
-            <p class="price">RM ${price}</p>
-            <span class="tag">${category}</span>
-        `;
+            if (name) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${image}" alt="${name}" onerror="this.src='https://via.placeholder.com/150'">
+                    <h3>${name}</h3>
+                    <p class="price">RM ${price}</p>
+                    <span class="tag">${category}</span>
+                `;
 
-        // Click event to open modal
-        card.onclick = () => {
-            const modal = document.getElementById('product-modal');
-            const details = document.getElementById('modal-details');
-            
-            details.innerHTML = `
-                <img src="${image}" style="width:100%; border-radius:8px;">
-                <h2>${name}</h2>
-                <p><strong>Category:</strong> ${category}</p>
-                <p>${description}</p>
-                <h3 class="price">RM ${price}</h3>
-                <a href="https://wa.me/${whatsapp}?text=I am interested in ${name}" 
-                   target="_blank" class="whatsapp-btn">
-                   Order via WhatsApp
-                </a>
-            `;
-            modal.style.display = "block";
-        };
+                card.onclick = () => {
+                    const modal = document.getElementById('product-modal');
+                    const details = document.getElementById('modal-details');
+                    
+                    details.innerHTML = `
+                        <img src="${image}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/300'">
+                        <h2>${name}</h2>
+                        <p><strong>Category:</strong> ${category || 'General'}</p>
+                        <p>${description || 'No description available.'}</p>
+                        <h3 class="price">RM ${price}</h3>
+                        <a href="https://wa.me/${myWhatsAppNumber}?text=Hi, I am interested in ordering: ${encodeURIComponent(name)}" 
+                           target="_blank" class="whatsapp-btn">
+                           Order via WhatsApp
+                        </a>
+                    `;
+                    modal.style.display = "block";
+                };
 
-        container.appendChild(card);
+                container.appendChild(card);
+            }
+        });
+    } catch (error) {
+        console.error("Error loading products:", error);
     }
-});
+}
 
-// Close modal logic
+// Modal closing logic
 document.querySelector('.close-button').onclick = () => {
     document.getElementById('product-modal').style.display = "none";
 };
@@ -58,6 +68,5 @@ window.onclick = (event) => {
         document.getElementById('product-modal').style.display = "none";
     }
 };
-}
 
 loadProducts();
