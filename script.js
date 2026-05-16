@@ -36,7 +36,7 @@ rows.forEach(row => {
                 <p><strong>Category:</strong> ${category}</p>
                 <p>${description}</p>
                 <h3 class="price">RM ${price}</h3>
-                <a href="https://wa.me/${whatsapp}?text=I am interested in ${name}" 
+                <a href="https://wa.me/60105958353?text=I am interested in ${name}" 
                    target="_blank" class="whatsapp-btn">
                    Order via WhatsApp
                 </a>
