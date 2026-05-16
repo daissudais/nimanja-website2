@@ -1,39 +1,27 @@
-const apiURL = 'https://v1.nocodeapi.com/daissudais/google_sheets/dKlDkUlArupwLiiv?tabId=Sheet1';
+// 1. Your Endpoint
+const apiURL = "https://v1.nocodeapi.com/daissudais/google_sheets/dKlDkUlArupwLiiv?tabId=Sheet1";
 const myWhatsAppNumber = "60123456789"; 
 
 async function loadProducts() {
     try {
-        console.log("1. Fetching data...");
+        // 2. The Fetch Request (Standard JavaScript - Fetch)
         const response = await fetch(apiURL);
-        const jsonResponse = await response.json();
+        const result = await response.json();
         
-        console.log("2. Data received:", jsonResponse);
-
-        // NoCodeAPI sometimes puts data in .data, sometimes it is the top-level array
-        const products = jsonResponse.data || jsonResponse; 
-        
-        if (!Array.isArray(products)) {
-            console.error("Data is not an array! Check NoCodeAPI settings.");
-            return;
-        }
-
+        // NoCodeAPI puts the rows in 'data'
+        const products = result.data; 
         const container = document.getElementById('catalog-container');
-        if (!container) {
-            console.error("HTML Error: Could not find an element with id='catalog-container'");
-            return;
-        }
         
+        if (!container) return;
         container.innerHTML = ''; 
 
-        products.forEach((product, index) => {
-            console.log(`3. Processing item ${index}:`, product);
-
-            // Using bracket notation to handle any hidden spaces or special characters
-            const name = product['Name'];
-            const price = product['Price'];
-            const category = product['Category'];
-            const image = product['ImageURL']; 
-            const description = product['Description'];
+        products.forEach(product => {
+            // 3. Mapping your Sheet headers
+            const name = product.Name;
+            const price = product.Price || product['# Price'];
+            const category = product.Category;
+            const image = product.ImageURL;
+            const description = product.Description;
 
             if (name) {
                 const card = document.createElement('div');
@@ -46,29 +34,45 @@ async function loadProducts() {
                 `;
 
                 card.onclick = () => {
-                    const modal = document.getElementById('product-modal');
-                    const details = document.getElementById('modal-details');
-                    details.innerHTML = `
-                        <img src="${image}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/300'">
-                        <h2>${name}</h2>
-                        <p><strong>Category:</strong> ${category || 'General'}</p>
-                        <p>${description || 'No description available.'}</p>
-                        <h3 class="price">RM ${price}</h3>
-                        <a href="https://wa.me/${myWhatsAppNumber}?text=Hi, I am interested in: ${encodeURIComponent(name)}" 
-                           target="_blank" class="whatsapp-btn">Order via WhatsApp</a>
-                    `;
-                    modal.style.display = "block";
+                    showModal(name, price, category, image, description);
                 };
+
                 container.appendChild(card);
             }
         });
-        
-        console.log("4. Finished rendering products.");
-
     } catch (error) {
-        console.error("FETCH ERROR:", error);
+        console.error("Error with Fetch:", error);
     }
 }
 
-// Keep your modal close logic at the bottom
+// Helper function to handle the modal display
+function showModal(name, price, category, image, description) {
+    const modal = document.getElementById('product-modal');
+    const details = document.getElementById('modal-details');
+    
+    details.innerHTML = `
+        <img src="${image}" style="width:100%; border-radius:8px;" onerror="this.src='https://via.placeholder.com/300'">
+        <h2>${name}</h2>
+        <p><strong>Category:</strong> ${category}</p>
+        <p>${description || 'No description available.'}</p>
+        <h3 class="price">RM ${price}</h3>
+        <a href="https://wa.me/${myWhatsAppNumber}?text=I am interested in: ${encodeURIComponent(name)}" 
+           target="_blank" class="whatsapp-btn">
+           Order via WhatsApp
+        </a>
+    `;
+    modal.style.display = "block";
+}
+
+// Close Modal logic
+document.querySelector('.close-button').onclick = () => {
+    document.getElementById('product-modal').style.display = "none";
+};
+
+window.onclick = (event) => {
+    if (event.target == document.getElementById('product-modal')) {
+        document.getElementById('product-modal').style.display = "none";
+    }
+};
+
 loadProducts();
