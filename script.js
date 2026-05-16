@@ -1,7 +1,7 @@
 const apiURL = 'https://v1.nocodeapi.com/daissudais/google_sheets/dKlDkUlArupwLiiv?tabId=Sheet1';
 
 // If your WhatsApp number is the same for all products, change it here:
-const myWhatsAppNumber = "60123456789"; // Use format: country code + number (no + or spaces)
+const myWhatsAppNumber = "60105958353"; // Use format: country code + number (no + or spaces)
 
 async function loadProducts() {
     try {
